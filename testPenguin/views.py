@@ -19,14 +19,18 @@ def testSuites(request):
     form = SuiteForm()
 
     if (request.method == 'POST'):
-        form = SuiteForm(request.POST)
-        if (not form.is_valid()):
-            print(form.errors)
+        if ('del' in request.POST):
+            Suite.objects.get(suite_slug = request.POST['del']).delete()
         else:
-            suite = form.save(commit=False)
-            suite.suite_created = datetime.datetime.now()
-            suite.suite_modified = datetime.datetime.now()
-            suite.save()
+            form = SuiteForm(request.POST)
+            if (not form.is_valid()):
+                print(form.errors)
+            else:
+                suite = form.save(commit=False)
+                suite.suite_created = datetime.datetime.now()
+                suite.suite_modified = datetime.datetime.now()
+                suite.save()
+                form = SuiteForm()
 
     suiteList = Suite.objects.order_by("suite_created")
     content = {'form': form, 'suiteList': suiteList}
@@ -41,10 +45,12 @@ def testCases(request):
         if (not form.is_valid()):
             print(form.errors)
         else:
-            case = form.save(commit=False)
-            case.case_created = datetime.datetime.now()
-            case.case_modified = datetime.datetime.now()
-            case.save()
+            if (request.value == 'save'):
+                case = form.save(commit=False)
+                case.case_created = datetime.datetime.now()
+                case.case_modified = datetime.datetime.now()
+                case.save()
+                form = CaseForm()
 
     caseList = Case.objects.order_by("case_created")
     content = {'form': form, 'caseList': caseList}
