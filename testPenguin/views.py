@@ -37,6 +37,9 @@ def testSuites(request):
 
     return render(request, 'testPenguin/testSuites.html', content)
 
+def testSuiteDetails(request, suite_name_slug):
+    return render(request, 'testPenguin/testSuiteDetails.html')
+
 def testCases(request):
     form = CaseForm()
 
