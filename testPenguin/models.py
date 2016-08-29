@@ -1,5 +1,6 @@
 from django.db import models
 from django.template.defaultfilters import slugify
+import datetime
 
 class Suite(models.Model):
     suite_name = models.CharField(max_length=128, unique=True)
@@ -10,6 +11,7 @@ class Suite(models.Model):
 
     def save(self, *args, **kwargs):
         self.suite_slug = slugify(self.suite_name)
+        self.suite_modified = datetime.datetime.now()
         super(Suite, self).save(*args, **kwargs)
 
     def __str__(self):
