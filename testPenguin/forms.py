@@ -31,3 +31,12 @@ class CaseForm(forms.ModelForm):
         model = Case
         fields = ('case_name', 'case_description')
         exclude = ('suite',)
+
+class testSuiteDetailsForm(forms.Form):
+    cases = Case.objects.all()
+    caseNameList = []
+    caseNameList.append(["Select a case", "Select a case"])
+    for case in cases:
+        caseNameList.append([case.case_name, case.case_name])
+
+    caseSelection = forms.ChoiceField(choices = caseNameList)

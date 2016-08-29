@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from testPenguin.models import Suite, Case, Step
-from testPenguin.forms import SuiteForm, CaseForm
+from testPenguin.forms import SuiteForm, CaseForm, testSuiteDetailsForm
 import datetime
 
 def welcome(request):
@@ -38,7 +38,39 @@ def testSuites(request):
     return render(request, 'testPenguin/testSuites.html', content)
 
 def testSuiteDetails(request, suite_name_slug):
-    return render(request, 'testPenguin/testSuiteDetails.html')
+    suite = Suite.objects.get(suite_slug = suite_name_slug)
+    error = "no error"
+    form = testSuiteDetailsForm()
+    if (request.method == 'POST'):
+        form = testSuiteDetailsForm(request.POST)
+        if (form.is_valid()):
+            if ('addCase' in request.POST):
+                try:
+                    case = Case.objects.get(case_name =
+                        form.cleaned_data['caseSelection'])
+                    suite.case_set.add(case)
+                    suite.save()
+                    form = testSuiteDetailsForm()
+                except:
+                    Case.DoesNotExist
+            else:
+                error = "the post was delivered"
+                try:
+                    case = Case.objects.get(case_name = request.POST['delCase'])
+                    error = request.POST['delCase']
+                    suite.case_set.remove(case)
+                    suite.save()
+                    form = testSuiteDetailsForm()
+                except:
+                    Case.DoesNotExist
+
+    suiteCases = suite.case_set.all()
+    content = {'suite': suite,
+        'form': form,
+        'error': error,
+        'suiteCases': suiteCases}
+
+    return render(request, 'testPenguin/testSuiteDetails.html', content)
 
 def testCases(request):
     form = CaseForm()
