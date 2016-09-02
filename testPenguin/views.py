@@ -1,4 +1,6 @@
 from django.shortcuts import render
+from django.http import HttpResponseRedirect
+from django.core.urlresolvers import reverse
 from testPenguin.models import Suite, Case, Step
 from testPenguin.forms import SuiteForm, CaseForm, testSuiteDetailsForm
 import datetime
@@ -39,28 +41,56 @@ def testSuites(request):
 
 def testSuiteDetails(request, suite_name_slug):
     suite = Suite.objects.get(suite_slug = suite_name_slug)
+    redirectString = '/testPenguin/testSuites/' + suite.suite_slug + '/'
     error = "no error"
     form = testSuiteDetailsForm()
     if (request.method == 'POST'):
-        form = testSuiteDetailsForm(request.POST)
-        if (form.is_valid()):
-            if ('addCase' in request.POST):
+        error = "The request method is post"
+        if ('removeButton' in request.POST):
+            error = "You have cliked the REMOVE button."
+            suite.case_set.remove(Case.objects.get(case_name =
+                request.POST['removeButton']))
+            form = testSuiteDetailsForm()
+
+            return HttpResponseRedirect('/testPenguin/testSuites/' + \
+                suite.suite_slug + '/')
+
+        if ('addButton' in request.POST):
+            error = "You have clicked the ADD button."
+            form = testSuiteDetailsForm(request.POST)
+            if (form.is_valid()):
+                error = "Form is valid"
                 try:
                     case = Case.objects.get(case_name =
                         form.cleaned_data['caseSelection'])
                     suite.case_set.add(case)
                     suite.save()
                     form = testSuiteDetailsForm()
+
+                    return HttpResponseRedirect('/testPenguin/testSuites/' + \
+                        suite.suite_slug + '/')
                 except:
                     Case.DoesNotExist
-            else:
-                error = "the post was delivered"
+
+        if ('modifyButton' in request.POST):
+            error = "You have clicked the MODIFY button."
+            form = testSuiteDetailsForm(request.POST)
+            if (form.is_valid()):
+                error = "Form is valid"
                 try:
-                    case = Case.objects.get(case_name = request.POST['delCase'])
-                    error = request.POST['delCase']
-                    suite.case_set.remove(case)
-                    suite.save()
-                    form = testSuiteDetailsForm()
+                    if (not(form.cleaned_data['suiteName'] == suite.suite_name)
+                        and not(form.cleaned_data['suiteName'] == '')):
+                        suite.suite_name = form.cleaned_data['suiteName']
+                        suite.save()
+                    if (not(form.cleaned_data['suiteDescription'] ==
+                        suite.suite_description)
+                        and not(form.cleaned_data['suiteDescription'] == '')):
+                        suite.suite_description = \
+                            form.cleaned_data['suiteDescription']
+                        suite.save()
+
+                    return HttpResponseRedirect('/testPenguin/testSuites/' + \
+                        suite.suite_slug + '/')
                 except:
                     Case.DoesNotExist
 

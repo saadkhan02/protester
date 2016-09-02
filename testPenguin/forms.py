@@ -32,11 +32,21 @@ class CaseForm(forms.ModelForm):
         fields = ('case_name', 'case_description')
         exclude = ('suite',)
 
-class testSuiteDetailsForm(forms.Form):
+def getCaseList():
     cases = Case.objects.all()
     caseNameList = []
     caseNameList.append(["Select a case", "Select a case"])
     for case in cases:
         caseNameList.append([case.case_name, case.case_name])
 
-    caseSelection = forms.ChoiceField(choices = caseNameList)
+    return caseNameList
+
+class testSuiteDetailsForm(forms.Form):
+    suiteName = forms.CharField(max_length = 128, required = False)
+    suiteDescription = forms.CharField(max_length = 500,
+        widget =  forms.Textarea, required = False)
+
+    def __init__(self, *args, **kwargs):
+        super(testSuiteDetailsForm, self).__init__(*args, **kwargs)
+        self.fields['caseSelection'] = \
+            forms.ChoiceField(choices = getCaseList(), required = False)
