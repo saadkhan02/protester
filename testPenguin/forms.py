@@ -50,3 +50,49 @@ class testSuiteDetailsForm(forms.Form):
         super(testSuiteDetailsForm, self).__init__(*args, **kwargs)
         self.fields['caseSelection'] = \
             forms.ChoiceField(choices = getCaseList(), required = False)
+
+# We make the action list dynamically available so that we can add more actions
+# without having to restart the webserver.
+def getActionList():
+    actions = []
+    actions.append(["selectAnAction", "Select an action"])
+    actions.append(["browse", "Browse"])
+    actions.append(["click", "Click"])
+    actions.append(["select", "Select"])
+    actions.append(["input", "Input"])
+    actions.append(["selectWithInput", "Select with input"])
+
+    return actions
+
+# We make the locator type list dynamically available so that we can add more
+# locator types without having to restart the webserver.
+def getLocatorTypes():
+    locatorTypes = []
+    locatorTypes.append(["selectLocatorType", "Select Locator Type"])
+    locatorTypes.append(["id", "id"])
+    locatorTypes.append(["xpath", "xpath"])
+    locatorTypes.append(["name", "name"])
+    locatorTypes.append(["css", "css"])
+    locatorTypes.append(["text", "text"])
+
+    return locatorTypes
+
+class testCaseDetailsForm(forms.Form):
+    alwaysRunOptions = []
+    alwaysRunOptions.append(["true", "True"])
+    alwaysRunOptions.append(["false", "False"])
+    actions = getActionList()
+
+    action = forms.ChoiceField(choices = actions, required = False)
+    stepName = forms.CharField(max_length = 128, required = False)
+    alwaysRun = forms.ChoiceField(choices = alwaysRunOptions,
+        required = False)
+    locatorType = forms.ChoiceField(choices = getLocatorTypes(),
+        required = False)
+    locator = forms.CharField(max_length = 200, required = False)
+    value = forms.CharField(max_length = 200, required = False)
+
+class modifyCaseForm(forms.Form):
+    caseName = forms.CharField(max_length = 128, required = False)
+    caseDescription = forms.CharField(max_length = 500,
+        widget = forms.Textarea, required = False)
