@@ -391,7 +391,7 @@
                         {% for case in caseList %}
                         <tr>
                           <td><input type="checkbox" class="flat" name="table_records"></td>
-                          <td>{{ case.case_name }}</td>
+                          <td><a href="/testPenguin/testCases/{{ case.case_slug }}/">{{ case.case_name }}</td>
                           <td>{{ case.case_modified }}</td>
                           <td>{{ case.case_created }}</td>
                         </tr>
