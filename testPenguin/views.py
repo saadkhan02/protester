@@ -164,12 +164,11 @@ def testCases(request):
         if (not form.is_valid()):
             print(form.errors)
         else:
-            if (request.value == 'save'):
-                case = form.save(commit=False)
-                case.case_created = datetime.datetime.now()
-                case.case_modified = datetime.datetime.now()
-                case.save()
-                form = CaseForm()
+            case = form.save(commit=False)
+            case.case_created = datetime.datetime.now()
+            case.case_modified = datetime.datetime.now()
+            case.save()
+            form = CaseForm()
 
     caseList = Case.objects.order_by("case_created")
     content = {'form': form, 'caseList': caseList}
