@@ -2,7 +2,8 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from testPenguin.models import Suite, Case, Step
-from testPenguin.forms import SuiteForm, CaseForm, testSuiteDetailsForm
+from testPenguin.forms import SuiteForm, CaseForm, testSuiteDetailsForm, \
+    testCaseDetailsForm, modifyCaseForm
 import datetime
 
 def welcome(request):
@@ -101,6 +102,59 @@ def testSuiteDetails(request, suite_name_slug):
         'suiteCases': suiteCases}
 
     return render(request, 'testPenguin/testSuiteDetails.html', content)
+
+def testCaseDetails(request, case_name_slug):
+    case = Case.objects.get(case_slug = case_name_slug)
+    form = testCaseDetailsForm()
+    error = "no error as of now"
+    if (request.method == 'POST'):
+        error = "The method is post"
+        if ('modifyButton' in request.POST):
+            error = "button was pressed"
+            return HttpResponseRedirect('/testPenguin/testCases/' + \
+                case.case_slug + '/modifyCase/')
+
+    content = {'case': case,
+        'form': form,
+        'error': error}
+
+    return render(request, 'testPenguin/testCaseDetails.html', content)
+
+def modifyCase(request, case_name_slug):
+    case = Case.objects.get(case_slug = case_name_slug)
+    form = modifyCaseForm(initial = {'caseName': case.case_name,
+        'caseDescription': case.case_description})
+    error = "No error as of now."
+    if (request.method == 'POST'):
+        error = "The method is post"
+        if ('modifyCaseDetails' in request.POST):
+            error = "You have clicked the MODIFY button."
+            form = modifyCaseForm(request.POST)
+            if (form.is_valid()):
+                error = "Form is valid"
+                try:
+                    if (not(form.cleaned_data['caseName'] == case.case_name)
+                        and not(form.cleaned_data['caseName'] == '')):
+                        case.case_name = form.cleaned_data['caseName']
+                        case.save()
+                    if (not(form.cleaned_data['caseDescription'] ==
+                        case.case_description)
+                        and not(form.cleaned_data['caseDescription'] == '')):
+                        case.case_description = \
+                            form.cleaned_data['caseDescription']
+                        case.save()
+
+                    return HttpResponseRedirect('/testPenguin/testCases/' + \
+                        case.case_slug + '/')
+                except:
+                    Case.DoesNotExist
+
+    content = {'case': case,
+        'form': form,
+        'error': error
+    }
+
+    return render(request, 'testPenguin/modifyCase.html', content)
 
 def testCases(request):
     form = CaseForm()
