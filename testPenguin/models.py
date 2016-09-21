@@ -50,12 +50,11 @@ class Step(models.Model):
     step_created = models.DateTimeField("Date created")
     step_modified = models.DateTimeField("Date modified")
     step_slug = models.SlugField(unique=True)
-    always_run = models.IntegerField(default=0)
+    always_run = models.CharField(max_length=5, default="false")
     action = models.CharField(max_length=128)
     arg1 = models.CharField(max_length=128)
     arg2 = models.CharField(max_length=128)
     arg3 = models.CharField(max_length=128)
-    message = models.CharField(max_length=128)
 
     def save(self, *args, **kwargs):
         self.step_slug = slugify(step_name)
