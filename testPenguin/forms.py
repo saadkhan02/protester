@@ -79,8 +79,8 @@ def getLocatorTypes():
 
 class testCaseDetailsForm(forms.Form):
     alwaysRunOptions = []
-    alwaysRunOptions.append(["true", "True"])
     alwaysRunOptions.append(["false", "False"])
+    alwaysRunOptions.append(["true", "True"])
     actions = getActionList()
 
     action = forms.ChoiceField(choices = actions, required = False)
