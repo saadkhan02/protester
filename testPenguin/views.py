@@ -171,31 +171,85 @@ def addStepsToCase(request, case):
     form = testCaseDetailsForm(request.POST)
     if (form.is_valid()):
         error = "Form is valid"
-        try:
-#           Add validations
-            maxStepOrder = 0
-            try:
-                maxStepOrder = case.step_set.order_by('step_order'). \
-                    step_order
-            except:
-                maxStepOrder = 0
-                error = "This is going to be the first step"
+        maxStepOrder = case.step_set.all().count()
 
-                case.step_set.create(
-                step_name = form.cleaned_data['stepName'],
-                action = form.cleaned_data['action'],
-                step_order = maxStepOrder + 1,
-                always_run = form.cleaned_data['alwaysRun'],
-                locator_type = form.cleaned_data['locatorType'],
-                locator = form.cleaned_data['locator'],
-                value = form.cleaned_data['value'])
-            case.save()
-            return HttpResponseRedirect('/testPenguin/testCases/' + \
-                case.case_slug + '/')
-        except:
-            error = "incomplete information"
+        case.step_set.create(
+        step_name = form.cleaned_data['stepName'],
+        action = form.cleaned_data['action'],
+        step_order = maxStepOrder + 1,
+        always_run = form.cleaned_data['alwaysRun'],
+        locator_type = form.cleaned_data['locatorType'],
+        locator = form.cleaned_data['locator'],
+        value = form.cleaned_data['value'])
+        case.save()
+        return HttpResponseRedirect('/testPenguin/testCases/' + \
+            case.case_slug + '/')
 
     return error
+
+##
+# Delete step from case
+#
+# @param request
+# @param case
+#
+def deleteStep(request, case):
+    form = testCaseDetailsForm(request.POST)
+    if (form.is_valid()):
+        step = case.step_set.get(pk = request.POST['removeButton'])
+        deletedOrder = step.step_order
+        step.delete()
+        case.save()
+
+        steps = case.step_set.filter(step_order__gt = deletedOrder)
+        for everyStep in steps:
+            everyStep.step_order -= 1
+            everyStep.save()
+
+    return HttpResponseRedirect('/testPenguin/testCases/' + case.case_slug +
+        '/')
+
+##
+# Move step one up or down.
+#
+# @param request
+# @param case
+# @param direction
+#
+def moveStep(request, case, direction):
+    error = "Move down button has been pressed"
+    form = testCaseDetailsForm(request.POST)
+    if (form.is_valid()):
+        # Get the curent step position
+        step = "dummy value"
+        if (direction == "up"):
+            step = case.step_set.get(pk = request.POST['upButton'])
+        if (direction == "down"):
+            step = case.step_set.get(pk = request.POST['downButton'])
+
+        currentPos = step.step_order
+        # Choose whether to move up or down
+        if (currentPos == 1 and direction == "up"):
+            error = "This is the first step. Can't move up."
+        elif (currentPos == case.step_set.all().count() and direction == "down"):
+            error = "This is the last step. Can't move down."
+        else:
+            newPos = currentPos - 1
+            if (direction == "down"):
+                newPos = currentPos + 1
+            # Move the step in focus to position -2
+            step.step_order = -2
+            step.save()
+            # Move the adjacent step to current position
+            adjStep = case.step_set.get(step_order = newPos)
+            adjStep.step_order = currentPos
+            adjStep.save()
+            # Move step in focus to new position
+            step.step_order = newPos
+            step.save()
+
+    return HttpResponseRedirect('/testPenguin/testCases/' + case.case_slug +
+        '/')
 
 ##
 # Test case details view.
@@ -221,22 +275,15 @@ def testCaseDetails(request, case_name_slug):
             error = addStepsToCase(request, case)
 
         if ('removeButton' in request.POST):
-            form = testCaseDetailsForm(request.POST)
-            if (form.is_valid()):
-                step = case.step_set.get(pk = request.POST['removeButton'])
-                step.delete()
-                case.save()
+            error = deleteStep(request, case)
 
-                return HttpResponseRedirect('/testPenguin/testCases/' + \
-                    case.case_slug + '/')
+        if ('upButton' in request.POST):
+            error = moveStep(request, case, "up")
 
-#        if ('upButton' in request.POST):
-#            form = testCaseDetailsForm(request.POST):
-#            if (form.is_valid()):
-#                currentOrder = case.step_set.
-#                    get(pk = request.POST['upButton']).step_order
+        if ('downButton' in request.POST):
+            error = moveStep(request, case, "down")
 
-    caseSteps = case.step_set.all()
+    caseSteps = case.step_set.all().order_by('step_order')
     content = {'case': case,
         'caseSteps': caseSteps,
         'form': form,
