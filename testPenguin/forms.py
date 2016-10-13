@@ -55,12 +55,12 @@ class testSuiteDetailsForm(forms.Form):
 # without having to restart the webserver.
 def getActionList():
     actions = []
-    actions.append(["selectAnAction", "Select an action"])
-    actions.append(["browse", "Browse"])
-    actions.append(["click", "Click"])
-    actions.append(["select", "Select"])
-    actions.append(["input", "Input"])
-    actions.append(["selectWithInput", "Select with input"])
+    actions.append(["", "Select an action"])
+    actions.append(["Browse", "Browse"])
+    actions.append(["Click", "Click"])
+    actions.append(["Select", "Select"])
+    actions.append(["Input", "Input"])
+    actions.append(["Select with input", "Select with input"])
 
     return actions
 
@@ -68,7 +68,7 @@ def getActionList():
 # locator types without having to restart the webserver.
 def getLocatorTypes():
     locatorTypes = []
-    locatorTypes.append(["selectLocatorType", "Select Locator Type"])
+    locatorTypes.append(["", "Select Locator Type"])
     locatorTypes.append(["id", "id"])
     locatorTypes.append(["xpath", "xpath"])
     locatorTypes.append(["name", "name"])
@@ -79,8 +79,8 @@ def getLocatorTypes():
 
 class testCaseDetailsForm(forms.Form):
     alwaysRunOptions = []
-    alwaysRunOptions.append(["false", "False"])
-    alwaysRunOptions.append(["true", "True"])
+    alwaysRunOptions.append(["False", "False"])
+    alwaysRunOptions.append(["True", "True"])
     actions = getActionList()
 
     action = forms.ChoiceField(choices = actions, required = False)
